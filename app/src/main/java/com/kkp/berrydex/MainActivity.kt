@@ -8,12 +8,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.kkp.berrydex.berrylist.BerryListScreen
+import com.kkp.berrydex.BerryList.BerryListScreen
+import com.kkp.berrydex.BerryList.BerryListViewModel
 import com.kkp.berrydex.ui.theme.BerryDexTheme
 import dagger.hilt.android.AndroidEntryPoint
 
