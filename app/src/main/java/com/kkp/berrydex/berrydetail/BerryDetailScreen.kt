@@ -210,7 +210,7 @@ fun NatGiftStats(
             text = statName,
             modifier = Modifier
                 .fillMaxWidth(0.5f)
-                .background()
+                .background(Color.LightGray)
                 .clip(RoundedCornerShape(10.dp)),
             textAlign = TextAlign.Center,
             fontSize = 20.sp
