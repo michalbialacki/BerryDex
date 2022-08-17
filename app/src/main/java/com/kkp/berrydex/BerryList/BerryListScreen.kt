@@ -29,9 +29,11 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImagePainter
 import coil.compose.SubcomposeAsyncImage
 import coil.compose.SubcomposeAsyncImageContent
+import coil.compose.rememberAsyncImagePainter
 import com.kkp.berrydex.R
 import com.kkp.berrydex.data.models.BerryListEntry
 import kotlinx.coroutines.launch
+import java.lang.reflect.Type
 
 @Composable
 fun BerryListScreen(
@@ -145,8 +147,9 @@ fun BerryEntry(
             )
         )
         .clickable {
+            val berryId = entry.imageUrl.takeLast(5).dropLast(4)
             navController.navigate(
-                "berry_detail_screen/${dominantColor.toArgb()}/${entry.name}"
+                "berry_detail_screen/${dominantColor.toArgb()}/${entry.name}/${berryId}"
             )
         }
     ){
@@ -154,7 +157,7 @@ fun BerryEntry(
             SubcomposeAsyncImage(
                 model = entry.imageUrl,
                 contentDescription = entry.name,
-                alignment = Alignment.Center
+                alignment = Alignment.TopCenter
             ) {
                 val state = painter.state
                 if (state is AsyncImagePainter.State.Loading){

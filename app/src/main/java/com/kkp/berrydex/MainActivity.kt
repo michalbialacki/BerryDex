@@ -7,6 +7,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.toLowerCase
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavType
@@ -16,8 +17,10 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.kkp.berrydex.BerryList.BerryListScreen
 import com.kkp.berrydex.BerryList.BerryListViewModel
+import com.kkp.berrydex.berrydetail.BerryDetailScreen
 import com.kkp.berrydex.ui.theme.BerryDexTheme
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.*
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -31,13 +34,16 @@ class MainActivity : ComponentActivity() {
                         BerryListScreen(navController = navController)
                     }
                     composable(
-                        "Berry_Detail_Screen/{dominantColor}/{berryName}",
+                        "Berry_Detail_Screen/{dominantColor}/{berryName}/{berryId}",
                                 arguments = listOf(
                                     navArgument("dominantColor"){
                                         type = NavType.IntType
                                     },
                                     navArgument("berryName"){
                                         type = NavType.StringType
+                                    },
+                                    navArgument("berryId"){
+                                        type = NavType.IntType
                                     }
                                 )
                     ){
@@ -48,7 +54,15 @@ class MainActivity : ComponentActivity() {
                         val berryName = remember{
                             it.arguments?.getString("berryName")
                         }
-                        TODO("Add detail screen & navigation for it")
+                        val berryId = remember{
+                            it.arguments?.getInt("berryId")
+                        }
+                        BerryDetailScreen(
+                            dominantColor = dominantColor ?: Color.White,
+                            berryName = berryName?.toLowerCase(Locale.ROOT) ?: "",
+                            berryId = berryId ?: 0,
+                            navController = navController
+                        )
                     }
                 }
             }

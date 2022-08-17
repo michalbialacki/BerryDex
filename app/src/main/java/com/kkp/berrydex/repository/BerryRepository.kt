@@ -1,6 +1,7 @@
 package com.kkp.berrydex.repository
 
 import com.kkp.berrydex.data.remote.BerryApi
+import com.kkp.berrydex.data.remote.responses.Berry
 import com.kkp.berrydex.data.remote.responses.BerryList
 import com.kkp.berrydex.util.Resource
 import dagger.hilt.android.scopes.ActivityScoped
@@ -17,6 +18,14 @@ class BerryRepository @Inject constructor(
             api.getBerryList(limit, offset)
         } catch (e:Exception){
             return Resource.Error("Error unknown")
+        }
+        return Resource.Success(response)
+    }
+    suspend fun getBerryInfo(berryName : String): Resource<Berry> {
+        val response = try{
+            api.getBerryInfo(berryName)
+        }catch (e:Exception){
+            return Resource.Error("UnknownError")
         }
         return Resource.Success(response)
     }
