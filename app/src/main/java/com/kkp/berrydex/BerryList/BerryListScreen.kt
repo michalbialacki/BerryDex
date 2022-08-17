@@ -147,7 +147,9 @@ fun BerryEntry(
             )
         )
         .clickable {
-            val berryId = entry.imageUrl.takeLast(5).dropLast(4)
+            var berryId = entry.imageUrl.takeLast(6).dropLast(4)
+            if (!berryId[0].isDigit()){
+               berryId = berryId.takeLast(1)}
             navController.navigate(
                 "berry_detail_screen/${dominantColor.toArgb()}/${entry.name}/${berryId}"
             )

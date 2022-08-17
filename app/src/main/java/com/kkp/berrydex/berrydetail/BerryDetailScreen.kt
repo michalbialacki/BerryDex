@@ -1,26 +1,33 @@
 package com.kkp.berrydex.berrydetail
 
 import android.util.Log
+import android.widget.Space
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.kkp.berrydex.data.remote.responses.Berry
+import com.kkp.berrydex.data.remote.responses.*
 import com.kkp.berrydex.util.Resource
 
 @Composable
@@ -218,7 +225,7 @@ fun NatGiftStats(
         Text(
             text = statValue,
             modifier = Modifier
-                .fillMaxWidth(0.5f),
+                .fillMaxWidth(1f),
             textAlign = TextAlign.Center,
             fontSize = 20.sp
         )
@@ -235,6 +242,51 @@ fun BerryFlavorWrapper(
         .height(420.dp)
         .clip(RoundedCornerShape(10.dp))
         .background(Color.LightGray)) {
+        BerryFlavorSection(berryInfo = berryInfo)
+
+    }
+
+}
+
+@Composable
+fun BerryFlavorSection(
+    berryInfo: Berry,
+    animDelayPerItem: Int = 100
+) {
+    val maxFlavorValue = remember {
+        berryInfo.flavors.maxOf { it.potency }
+    }
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Spacer(modifier = Modifier
+            .fillMaxWidth()
+            .height(20.dp))
+        Text(
+            text = "Flavor",
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 20.sp)
+        Spacer(modifier = Modifier
+            .fillMaxWidth()
+            .height(20.dp))
+        Row(modifier = Modifier
+            .fillMaxWidth()
+            .height(400.dp)
+            .padding(
+                start = 4.dp,
+                end = 6.dp
+            ),
+            horizontalArrangement = Arrangement.SpaceBetween) {
+            for (i in berryInfo.flavors.indices){
+                val flavor = berryInfo.flavors[i]
+                BerryFlavourSpec(
+                    flavorName = flavor.flavor.name,
+                    flavorPotency = flavor.potency,
+                    flavorPotencyMax = maxFlavorValue
+                )
+            }
+        }
+
 
     }
 
@@ -244,8 +296,90 @@ fun BerryFlavorWrapper(
 fun BerryFlavourSpec(
     flavorName : String,
     flavorPotency : Int,
-    statColor : Color = Color.LightGray
+    flavorPotencyMax: Int,
+    statColor : Color = Color.Blue
 ) {
+    val barValue = flavorPotency / (1.25f * flavorPotencyMax)
+    var animationPlayed by remember{
+        mutableStateOf(false)
+    }
+
+    val curPercent = animateFloatAsState(
+        targetValue = if (animationPlayed){
+            flavorPotency / (1.25f * flavorPotencyMax.toFloat())
+        } else 0f,
+        animationSpec = tween(
+            1000,
+            0
+        )
+    )
+    LaunchedEffect(key1 = true){
+        animationPlayed = true
+    }
 
 
+    Box(contentAlignment = Alignment.BottomCenter){
+        Box(
+            modifier = Modifier
+                .width(40.dp)
+                .fillMaxHeight(0.9f)
+                .clip(CircleShape)
+                .alpha(0.7f)
+                .background(statColor)
+                .padding(8.dp),
+            contentAlignment = Alignment.BottomCenter){
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier
+                    .fillMaxWidth(1f)
+                    .fillMaxHeight(curPercent.value)
+                    .clip(CircleShape)
+                    .background(Color.Green)
+            ) {
+                Text(text = flavorPotency.toString() ,fontWeight = FontWeight.SemiBold)
+
+            }
+
+        }
+        Text(
+            text = flavorName.replaceFirstChar { it.uppercase() },
+            fontSize = 18.sp,
+            modifier = Modifier.offset(y=30.dp))
+    }
+
+
+
+
+
+
+}
+val previewFlavorList = listOf<Flavor>(
+    Flavor(FlavorX("spicy","URL"),0),
+    Flavor(FlavorX("dry","URL"),0),
+    Flavor(FlavorX("sweet","URL"),5),
+    Flavor(FlavorX("bitter","URL"),0),
+    Flavor(FlavorX("sour","URL"),5)
+    )
+
+val previewBerry = Berry(
+    firmness = Firmness("Firm","URL"),
+    flavors = previewFlavorList,
+    growth_time = 12,
+    id = 66,
+    item = Item("Item","URL"),
+    max_harvest = 15,
+    name = "Berry",
+    natural_gift_power = 60,
+    natural_gift_type = NaturalGiftType("water","url"),
+    size = 1,
+    smoothness = 2,
+    soil_dryness = 1
+)
+
+@Preview
+@Composable
+fun myPreview() {
+    BerryFlavorWrapper(berryInfo = previewBerry)
+//        BerryFlavourSpec(flavorName = "Dry", flavorPotency = 10, flavorPotencyMax = 10)
 }
