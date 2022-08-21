@@ -18,6 +18,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
@@ -40,15 +41,26 @@ fun BerryListScreen(
     navController: NavController?,
 //    viewModel: BerryListViewModel = hiltViewModel()
 ) {
+    val gradient = Brush.verticalGradient(
+        listOf(
+            Color(0xff47cba3),
+            Color(0xffb5ffff),
+            Color(0xff47cba3)
+        )
+    )
+
     Surface (
-        color = MaterialTheme.colors.background,
-        modifier = Modifier.fillMaxSize())  {
-        Column {
+        modifier = Modifier
+            .fillMaxSize()
+            .background(gradient))  {
+        Column(
+            modifier = Modifier.background(gradient)
+        ) {
             Spacer(modifier = Modifier
                 .height(18.dp)
                 .fillMaxWidth())
             Image(
-                painter = painterResource(id = R.drawable.berries_logo),
+                painter = painterResource(id = R.drawable.new_logo),
                 contentDescription = "Pokemon Berries",
                 modifier = Modifier
                     .fillMaxWidth()
@@ -155,7 +167,13 @@ fun BerryEntry(
             )
         }
     ){
-        Column(horizontalAlignment = CenterHorizontally) {
+
+        Column(
+            horizontalAlignment = CenterHorizontally) {
+
+            Spacer(
+                modifier = Modifier.fillMaxWidth().height(30.dp)
+            )
             SubcomposeAsyncImage(
                 model = entry.imageUrl,
                 contentDescription = entry.name,
@@ -165,11 +183,11 @@ fun BerryEntry(
                 if (state is AsyncImagePainter.State.Loading){
                     CircularProgressIndicator(
                         color = MaterialTheme.colors.primary,
-                        modifier = Modifier.scale(0.2f)
+                        modifier = Modifier.scale(0.5f)
                     )
                 }
                 else{
-                    SubcomposeAsyncImageContent(modifier = Modifier.size(40.dp))
+                    SubcomposeAsyncImageContent(modifier = Modifier.size(60.dp))
                     LaunchedEffect(key1 = painter){
                         launch {
                             val image = painter.imageLoader.execute(painter.request).drawable
@@ -180,6 +198,11 @@ fun BerryEntry(
                     }
                 }
             }
+
+            Spacer(
+                modifier = Modifier.fillMaxWidth().height(40.dp)
+            )
+
             Text(text = entry.name,
                 fontSize = 20.sp,
                 textAlign = TextAlign.Center,
@@ -189,6 +212,7 @@ fun BerryEntry(
     }
 
 }
+
 
 @Preview
 @Composable

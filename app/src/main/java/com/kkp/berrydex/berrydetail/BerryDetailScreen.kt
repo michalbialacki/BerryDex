@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
@@ -29,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.kkp.berrydex.R
 import com.kkp.berrydex.data.remote.responses.*
 import com.kkp.berrydex.util.Resource
 
@@ -43,7 +45,13 @@ fun BerryDetailScreen(
     val berryInfo = produceState<Resource<Berry>>(initialValue = Resource.Loading()){
         value = viewModel.getBerryInfo(berryName)
     }.value
-
+    val gradient = Brush.verticalGradient(
+        listOf(
+            Color(0xff47cba3),
+            Color(0xffb5ffff),
+            Color(0xff47cba3)
+        )
+    )
     val berryURL = "https://raw.githubusercontent.com/michalbialacki/BerrySprites/main/Berries/${berryId}.png"
     BerryStateWrapper(berryInfo = berryInfo)
 
@@ -51,7 +59,7 @@ fun BerryDetailScreen(
 
     Box(modifier = Modifier
         .fillMaxSize()
-        .background(dominantColor)
+        .background(gradient)
         .padding(),
         contentAlignment = Alignment.Center){
         BerryStateWrapper(berryInfo = berryInfo)
@@ -94,7 +102,8 @@ fun BerryStateWrapper(
             Text(
                 text = berryInfo.message!!,
                 color = Color.Red,
-                fontSize = 20.sp
+                fontSize = 20.sp,
+                style = MaterialTheme.typography.body1
             )
         }
     }
@@ -128,10 +137,7 @@ fun BerryCard(
         ) {
             Text(
                 text = berryInfo.name.replaceFirstChar { it.uppercase() } + " Berry",
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colors.onSurface,
-                fontSize = 24.sp,
+                style = MaterialTheme.typography.h1
             )
             Spacer(modifier = Modifier
                 .fillMaxWidth()
@@ -178,14 +184,14 @@ fun BerryNatGift(
     }
     val rotation by animateFloatAsState(
         targetValue = if (rotated) 180f else 0f,
-        animationSpec = tween(500))
+        animationSpec = tween(700))
     val frontAnimation by animateFloatAsState(
         targetValue = if (!rotated) 1f else 0f,
-        animationSpec = tween(500)
+        animationSpec = tween(700)
     )
     val backAnimation by animateFloatAsState(
         targetValue = if (rotated) 1f else 0f,
-        animationSpec = tween(500)
+        animationSpec = tween(700)
     )
 
     Box(modifier = Modifier
@@ -193,7 +199,7 @@ fun BerryNatGift(
         .height(120.dp)
         .padding(8.dp)
         .clip(RoundedCornerShape(10.dp))
-        .background(Color.LightGray)
+        .background(MaterialTheme.colors.primary)
         .graphicsLayer {
             rotationY = rotation
             cameraDistance = 8 * density
@@ -212,9 +218,8 @@ fun BerryNatGift(
             if (!rotated){
                 Text(
                     text = "Natural Gift",
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 20.sp,
-                    color = MaterialTheme.colors.onSurface)
+                    style = MaterialTheme.typography.h2
+                )
                 NatGiftStats(
                     statName = "Type",
                     statValue = berryInfo.natural_gift_type.name.replaceFirstChar { it.uppercase() }
@@ -235,15 +240,11 @@ fun BerryNatGift(
                         " berries per tree."
                 Text(
                     text = "Usefull Info",
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 18.sp,
-                    color = MaterialTheme.colors.onSurface)
+                    style = MaterialTheme.typography.h2
+                )
                 Text(
                     text = "${berryTrivia} ",
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 14.sp,
-                    textAlign = TextAlign.Justify,
-                    color = MaterialTheme.colors.onSurface,
+                    style = MaterialTheme.typography.body1,
                     modifier = Modifier.padding(
                         start = 4.dp,
                         end = 4.dp
@@ -274,19 +275,22 @@ fun NatGiftStats(
     ) {
         Text(
             text = statName,
+            style = MaterialTheme.typography.h3,
             modifier = Modifier
                 .fillMaxWidth(0.5f)
-                .background(Color.LightGray)
+                .height(35.dp)
+                .background(MaterialTheme.colors.secondaryVariant)
                 .clip(RoundedCornerShape(10.dp)),
-            textAlign = TextAlign.Center,
-            fontSize = 20.sp
+
         )
         Text(
             text = statValue,
+            style = MaterialTheme.typography.h3,
             modifier = Modifier
-                .fillMaxWidth(1f),
-            textAlign = TextAlign.Center,
-            fontSize = 20.sp
+                .fillMaxWidth(1f)
+                .height(35.dp)
+                .background(MaterialTheme.colors.secondary),
+
         )
     }
 
@@ -300,7 +304,7 @@ fun BerryFlavorWrapper(
         .width(300.dp)
         .height(420.dp)
         .clip(RoundedCornerShape(10.dp))
-        .background(Color.LightGray)) {
+        .background(MaterialTheme.colors.primary)) {
         BerryFlavorSection(berryInfo = berryInfo)
 
     }
@@ -322,9 +326,8 @@ fun BerryFlavorSection(
         Text(
             text = "Flavor",
             modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center,
-            fontWeight = FontWeight.SemiBold,
-            fontSize = 20.sp)
+            style = MaterialTheme.typography.h2
+        )
         Spacer(modifier = Modifier
             .fillMaxWidth()
             .height(20.dp))
@@ -384,7 +387,7 @@ fun BerryFlavourSpec(
                 .fillMaxHeight(0.9f)
                 .clip(CircleShape)
                 .alpha(0.7f)
-                .background(statColor)
+                .background(MaterialTheme.colors.onError)
                 .padding(8.dp),
             contentAlignment = Alignment.BottomCenter){
             Column(
@@ -394,16 +397,19 @@ fun BerryFlavourSpec(
                     .fillMaxWidth(1f)
                     .fillMaxHeight(curPercent.value)
                     .clip(CircleShape)
-                    .background(Color.Green)
+                    .background(MaterialTheme.colors.onSurface)
             ) {
-                Text(text = flavorPotency.toString() ,fontWeight = FontWeight.SemiBold)
+                Text(
+                    text = flavorPotency.toString(),
+                    style = MaterialTheme.typography.h3
+                )
 
             }
 
         }
         Text(
             text = flavorName.replaceFirstChar { it.uppercase() },
-            fontSize = 18.sp,
+            style = MaterialTheme.typography.h3,
             modifier = Modifier.offset(y=30.dp))
     }
 
@@ -439,6 +445,6 @@ val previewBerry = Berry(
 @Preview
 @Composable
 fun myPreview() {
-    BerryFlavorWrapper(berryInfo = previewBerry)
+    BerryCard(berryInfo = previewBerry)
 //        BerryFlavourSpec(flavorName = "Dry", flavorPotency = 10, flavorPotencyMax = 10)
 }
