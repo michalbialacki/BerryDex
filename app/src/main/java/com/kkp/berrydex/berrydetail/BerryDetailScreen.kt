@@ -28,7 +28,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.qrcode.QRCodeWriter
@@ -42,11 +41,9 @@ import java.time.format.DateTimeFormatter
 
 @Composable
 fun BerryDetailScreen(
-    dominantColor : Color,
-    berryName : String,
-    berryId : Int,
-    navController: NavController,
-    viewModel : BerryDetailViewModel = hiltViewModel()
+    berryName: String,
+    berryId: Int,
+    viewModel: BerryDetailViewModel = hiltViewModel()
 ){
     val berryInfo = produceState<Resource<Berry>>(initialValue = Resource.Loading()){
         value = viewModel.getBerryInfo(berryName)
@@ -90,7 +87,6 @@ fun BerryDetailScreen(
 @Composable
 fun BerryStateWrapper(
     berryInfo: Resource<Berry>,
-    modifier: Modifier = Modifier,
     loadingModifier: Modifier = Modifier
 ) {
     when(berryInfo){
@@ -116,8 +112,7 @@ fun BerryStateWrapper(
 
 @Composable
 fun BerryCard(
-    berryInfo: Berry,
-    modifier: Modifier = Modifier
+    berryInfo: Berry
 ) {
 
     Box(modifier = Modifier
@@ -158,23 +153,6 @@ fun BerryCard(
         }
     }
 
-
-}
-
-@Composable
-fun BerrySpec(
-    berryInfo : Berry,
-    animDelayPerItem : Int = 100,
-) {
-    var tasteList = mutableListOf<List<String>>()
-    berryInfo.flavors.let {
-        for (i in it.indices){
-            tasteList.add(listOf(
-                it.get(i).flavor.name.replaceFirstChar(Char::titlecase),
-                it.get(i).potency.toString())
-            )
-        }
-    }
 
 }
 
@@ -237,7 +215,7 @@ fun BerryNatGift(
             else{
                 val berryFirmness = berryInfo.firmness.name.replace('-',' ')
 
-                val berryTrivia = "This berry feels ${berryFirmness} in your hand. " +
+                val berryTrivia = "This berry feels $berryFirmness in your hand. " +
                         "It measures about ${berryInfo.size / 10} centimeters. " +
                         "You may gather them every ${4 * berryInfo.growth_time} hours " +
                         "and - if cared properly - it can grow up to ${berryInfo.max_harvest}" +
@@ -247,7 +225,7 @@ fun BerryNatGift(
                     style = MaterialTheme.typography.h2
                 )
                 Text(
-                    text = "${berryTrivia} ",
+                    text = "$berryTrivia ",
                     style = MaterialTheme.typography.body1,
                     modifier = Modifier.padding(
                         start = 4.dp,
@@ -317,16 +295,12 @@ fun BerryFlavorWrapper(
 
 @Composable
 fun BerryFlavorSection(
-    berryInfo: Berry,
-    animDelayPerItem: Int = 100
+    berryInfo: Berry
 ) {
 
     var rotated by remember {
         mutableStateOf(false)
     }
-    val rotation by animateFloatAsState(
-        targetValue = if (rotated) 180f else 0f,
-        animationSpec = tween(700))
     val frontAnimation by animateFloatAsState(
         targetValue = if (!rotated) 1f else 0f,
         animationSpec = tween(700)
@@ -471,12 +445,11 @@ fun PlantBerry(
 
 @Composable
 fun BerryFlavourSpec(
-    flavorName : String,
-    flavorPotency : Int,
-    flavorPotencyMax: Int,
-    statColor : Color = Color.Blue
+    flavorName: String,
+    flavorPotency: Int,
+    flavorPotencyMax: Int
 ) {
-    val barValue = flavorPotency / (1.25f * flavorPotencyMax)
+    flavorPotency / (1.25f * flavorPotencyMax)
     var animationPlayed by remember{
         mutableStateOf(false)
     }
@@ -534,7 +507,7 @@ fun BerryFlavourSpec(
 
 
 }
-val previewFlavorList = listOf<Flavor>(
+val previewFlavorList = listOf(
     Flavor(FlavorX("spicy","URL"),0),
     Flavor(FlavorX("dry","URL"),0),
     Flavor(FlavorX("sweet","URL"),5),
@@ -560,27 +533,21 @@ val previewBerry = Berry(
 
 @Preview
 @Composable
-fun myPreview() {
+fun MyPreview() {
     BerryCard(berryInfo = previewBerry)
 //        BerryFlavourSpec(flavorName = "Dry", flavorPotency = 10, flavorPotencyMax = 10)
-}
-
-@Composable
-fun Toast(text : String) {
-    val context = LocalContext.current
-    Toast.makeText(context,text,Toast.LENGTH_SHORT).show()
 }
 
 fun createQR(
     berryInfo: Berry,
     timeStamp : String) : Bitmap{
     val berryFlavor = berryInfo.flavors
-    val flavList = listOf<List<String>>(
-        listOf<String>(berryFlavor[0].flavor.name, berryFlavor[0].potency.toString()),
-        listOf<String>(berryFlavor[1].flavor.name, berryFlavor[1].potency.toString()),
-        listOf<String>(berryFlavor[2].flavor.name, berryFlavor[2].potency.toString()),
-        listOf<String>(berryFlavor[3].flavor.name, berryFlavor[3].potency.toString()),
-        listOf<String>(berryFlavor[4].flavor.name, berryFlavor[4].potency.toString()),
+    val flavList = listOf(
+        listOf(berryFlavor[0].flavor.name, berryFlavor[0].potency.toString()),
+        listOf(berryFlavor[1].flavor.name, berryFlavor[1].potency.toString()),
+        listOf(berryFlavor[2].flavor.name, berryFlavor[2].potency.toString()),
+        listOf(berryFlavor[3].flavor.name, berryFlavor[3].potency.toString()),
+        listOf(berryFlavor[4].flavor.name, berryFlavor[4].potency.toString()),
     )
     val infoToBitmap = "${berryInfo.name};${flavList};$timeStamp"
     val bitMatrix = QRCodeWriter().encode(infoToBitmap,BarcodeFormat.QR_CODE, 512,512)
