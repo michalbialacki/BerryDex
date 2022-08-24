@@ -1,28 +1,28 @@
 package com.kkp.berrydex.berrydetail
 
-import android.util.Log
-import android.widget.Space
+import android.graphics.Bitmap
+import android.os.Environment
+import android.widget.Toast
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.graphics.*
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -30,9 +30,15 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.kkp.berrydex.R
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.qrcode.QRCodeWriter
 import com.kkp.berrydex.data.remote.responses.*
 import com.kkp.berrydex.util.Resource
+import java.io.File
+import java.io.FileOutputStream
+import java.time.Instant
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun BerryDetailScreen(
@@ -89,7 +95,6 @@ fun BerryStateWrapper(
 ) {
     when(berryInfo){
         is Resource.Success ->{
-//            BerrySpec(berryInfo = berryInfo.data!!)
             BerryCard(berryInfo = berryInfo.data!!)
         }
         is Resource.Loading ->{
@@ -128,7 +133,6 @@ fun BerryCard(
 
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-//            verticalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier
                 .offset(y = 40.dp)
                 .fillMaxSize(),
@@ -170,7 +174,6 @@ fun BerrySpec(
                 it.get(i).potency.toString())
             )
         }
-        Log.d("Detail", "BerryDetailScreen: ${tasteList}")
     }
 
 }
@@ -208,7 +211,8 @@ fun BerryNatGift(
             rotated = !rotated
         }){
         Column(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
                 .graphicsLayer {
                     alpha = if (rotated) backAnimation else frontAnimation
                     rotationY = rotation
@@ -316,42 +320,153 @@ fun BerryFlavorSection(
     berryInfo: Berry,
     animDelayPerItem: Int = 100
 ) {
-    val maxFlavorValue = remember {
-        berryInfo.flavors.maxOf { it.potency }
+
+    var rotated by remember {
+        mutableStateOf(false)
     }
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Spacer(modifier = Modifier
-            .fillMaxWidth()
-            .height(20.dp))
-        Text(
-            text = "Flavor",
-            modifier = Modifier.fillMaxWidth(),
-            style = MaterialTheme.typography.h2
-        )
-        Spacer(modifier = Modifier
-            .fillMaxWidth()
-            .height(20.dp))
-        Row(modifier = Modifier
-            .fillMaxWidth()
-            .height(400.dp)
-            .padding(
-                start = 4.dp,
-                end = 6.dp
-            ),
-            horizontalArrangement = Arrangement.SpaceBetween) {
-            for (i in berryInfo.flavors.indices){
-                val flavor = berryInfo.flavors[i]
-                BerryFlavourSpec(
-                    flavorName = flavor.flavor.name,
-                    flavorPotency = flavor.potency,
-                    flavorPotencyMax = maxFlavorValue
-                )
+    val rotation by animateFloatAsState(
+        targetValue = if (rotated) 180f else 0f,
+        animationSpec = tween(700))
+    val frontAnimation by animateFloatAsState(
+        targetValue = if (!rotated) 1f else 0f,
+        animationSpec = tween(700)
+    )
+    val backAnimation by animateFloatAsState(
+        targetValue = if (rotated) 1f else 0f,
+        animationSpec = tween(700)
+    )
+
+
+        Column(
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .fillMaxSize()
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onTap = { rotated = !rotated }
+                    )
+                }
+                .graphicsLayer {
+                    alpha = if (rotated) backAnimation else frontAnimation
+                }
+        ) {
+            if (!rotated){
+                FlavorPage(berryInfo = berryInfo)
+            }
+            else{
+                PlantBerry(berryInfo = berryInfo)
             }
         }
 
 
+}
+
+@Composable
+fun FlavorPage(
+    berryInfo: Berry
+) {
+
+    val maxFlavorValue = remember {
+        berryInfo.flavors.maxOf { it.potency }
     }
 
+    Spacer(modifier = Modifier
+        .fillMaxWidth()
+        .height(20.dp))
+    Text(
+        text = "Flavor",
+        modifier = Modifier.fillMaxWidth(),
+        style = MaterialTheme.typography.h2
+    )
+    Spacer(modifier = Modifier
+        .fillMaxWidth()
+        .height(20.dp))
+    Row(modifier = Modifier
+        .fillMaxWidth()
+        .height(400.dp)
+        .padding(
+            start = 4.dp,
+            end = 6.dp
+        ),
+        horizontalArrangement = Arrangement.SpaceBetween) {
+        for (i in berryInfo.flavors.indices){
+            val flavor = berryInfo.flavors[i]
+            BerryFlavourSpec(
+                flavorName = flavor.flavor.name,
+                flavorPotency = flavor.potency,
+                flavorPotencyMax = maxFlavorValue
+            )
+        }
+    }
+
+}
+
+@Composable
+fun PlantBerry(
+    berryInfo: Berry
+) {
+    val thisContext = LocalContext.current
+
+    val timeStamp = DateTimeFormatter
+        .ofPattern("yyyyMMddHHmmss")
+        .withZone(ZoneOffset.UTC)
+        .format(Instant.now())
+    val berryBitmap = createQR(berryInfo, timeStamp)
+
+
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .padding(8.dp),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.SpaceBetween,
+            horizontalAlignment = Alignment.CenterHorizontally) {
+            Row(verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(40.dp)) {
+                Text(text = "Hey there, farmer!",
+                    style = MaterialTheme.typography.h2)
+            }
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.pointerInput(Unit) {
+                    detectTapGestures(
+                        onLongPress = {
+                            val file = File(
+                                Environment
+                                    .getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                                    .toString(),
+                                "${berryInfo.name}${timeStamp}"+".jpg")
+                            val fOut = FileOutputStream(file)
+                            berryBitmap.compress(Bitmap.CompressFormat.JPEG,85,fOut)
+                            fOut.flush()
+                            fOut.close()
+                            Toast.makeText(thisContext,"QR saved!",Toast.LENGTH_SHORT).show()
+                        }
+                    )
+                }
+            ){
+                Image(bitmap = berryBitmap.asImageBitmap(),
+                    contentDescription = "QR for new berry",
+                )
+//                Text(text = "XD",modifier = Modifier.clickable {
+
+//                })
+            }
+
+            Text(text = "If you plan to plant a new berry tree, feel free to tag it" +
+                    "with this QR code. You will find it much easier to monitor and" +
+                    "to harvest the fruits of your patience! Press and hold the code to save" +
+                    " it to print it later!",
+                style = MaterialTheme.typography.body1,
+                textAlign = TextAlign.Center)
+        }
+    }
 }
 
 @Composable
@@ -442,9 +557,38 @@ val previewBerry = Berry(
     soil_dryness = 1
 )
 
+
 @Preview
 @Composable
 fun myPreview() {
     BerryCard(berryInfo = previewBerry)
 //        BerryFlavourSpec(flavorName = "Dry", flavorPotency = 10, flavorPotencyMax = 10)
+}
+
+@Composable
+fun Toast(text : String) {
+    val context = LocalContext.current
+    Toast.makeText(context,text,Toast.LENGTH_SHORT).show()
+}
+
+fun createQR(
+    berryInfo: Berry,
+    timeStamp : String) : Bitmap{
+    val berryFlavor = berryInfo.flavors
+    val flavList = listOf<List<String>>(
+        listOf<String>(berryFlavor[0].flavor.name, berryFlavor[0].potency.toString()),
+        listOf<String>(berryFlavor[1].flavor.name, berryFlavor[1].potency.toString()),
+        listOf<String>(berryFlavor[2].flavor.name, berryFlavor[2].potency.toString()),
+        listOf<String>(berryFlavor[3].flavor.name, berryFlavor[3].potency.toString()),
+        listOf<String>(berryFlavor[4].flavor.name, berryFlavor[4].potency.toString()),
+    )
+    val infoToBitmap = "${berryInfo.name};${flavList};$timeStamp"
+    val bitMatrix = QRCodeWriter().encode(infoToBitmap,BarcodeFormat.QR_CODE, 512,512)
+    val berryBitmap = Bitmap.createBitmap(512,512,Bitmap.Config.RGB_565)
+    for (x in 0 until bitMatrix.width){
+        for (y in 0 until bitMatrix.height){
+            berryBitmap.setPixel(x,y, if (bitMatrix.get(x,y)) Color.Black.toArgb() else Color.White.toArgb())
+        }
+    }
+    return berryBitmap
 }

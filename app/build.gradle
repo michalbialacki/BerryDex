@@ -66,6 +66,9 @@ dependencies {
 
     implementation 'androidx.palette:palette-ktx:1.0.0'
 
+    //ZXing - QR generator & scanner library
+    implementation 'com.google.zxing:core:3.4.0'
+
 
     implementation 'androidx.core:core-ktx:1.8.0'
     implementation "androidx.compose.ui:ui:$compose_version"
