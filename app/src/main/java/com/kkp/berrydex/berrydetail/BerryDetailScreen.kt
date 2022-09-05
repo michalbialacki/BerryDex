@@ -542,14 +542,17 @@ fun createQR(
     berryInfo: Berry,
     timeStamp : String) : Bitmap{
     val berryFlavor = berryInfo.flavors
-    val flavList = listOf(
-        listOf(berryFlavor[0].flavor.name, berryFlavor[0].potency.toString()),
-        listOf(berryFlavor[1].flavor.name, berryFlavor[1].potency.toString()),
-        listOf(berryFlavor[2].flavor.name, berryFlavor[2].potency.toString()),
-        listOf(berryFlavor[3].flavor.name, berryFlavor[3].potency.toString()),
-        listOf(berryFlavor[4].flavor.name, berryFlavor[4].potency.toString()),
-    )
-    val infoToBitmap = "${berryInfo.name};${flavList};$timeStamp"
+
+    val flavMap = mapOf(
+        berryFlavor[0].flavor.name to berryFlavor[0].potency.toString(),
+        berryFlavor[1].flavor.name to berryFlavor[1].potency.toString(),
+        berryFlavor[2].flavor.name to berryFlavor[2].potency.toString(),
+        berryFlavor[3].flavor.name to berryFlavor[3].potency.toString(),
+        berryFlavor[4].flavor.name to berryFlavor[4].potency.toString(),
+
+        )
+    val infoToBitmap = "BerryFarmerApplication:${berryInfo.name.uppercase()} Berry;${flavMap};$timeStamp;" +
+            " ${berryInfo.growth_time};${berryInfo.max_harvest}"
     val bitMatrix = QRCodeWriter().encode(infoToBitmap,BarcodeFormat.QR_CODE, 512,512)
     val berryBitmap = Bitmap.createBitmap(512,512,Bitmap.Config.RGB_565)
     for (x in 0 until bitMatrix.width){
